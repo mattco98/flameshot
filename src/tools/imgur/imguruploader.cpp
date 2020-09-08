@@ -80,9 +80,6 @@ ImgurUploader::handleReply(QNetworkReply* reply)
     QJsonObject json = response.object();
     QJsonObject data = json[QStringLiteral("data")].toObject();
     m_imageURL.setUrl(data[QStringLiteral("link")].toString());
-    m_deleteImageURL.setUrl(
-      QStringLiteral("https://imgur.com/delete/%1")
-        .arg(data[QStringLiteral("deletehash")].toString()));
     if (ConfigHandler().copyAndCloseAfterUploadEnabled()) {
       QApplication::clipboard()->setText(m_imageURL.toString());
       SystemNotification().sendMessage(QObject::tr("URL copied to clipboard."));
@@ -118,20 +115,11 @@ ImgurUploader::upload()
   m_pixmap.save(&buffer, "PNG");
 
   QUrlQuery urlQuery;
-  urlQuery.addQueryItem(QStringLiteral("title"),
-                        QStringLiteral("flameshot_screenshot"));
-  QString description = FileNameHandler().parsedPattern();
-  urlQuery.addQueryItem(QStringLiteral("description"), description);
-
-  QUrl url(QStringLiteral("https://api.imgur.com/3/image"));
+  QUrl url(QStringLiteral("https://i.mattco.me/upload"));
   url.setQuery(urlQuery);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader,
-                    "application/application/x-www-form-urlencoded");
-  request.setRawHeader(
-    "Authorization",
-    QStringLiteral("Client-ID %1").arg(IMGUR_CLIENT_ID).toUtf8());
-
+                    "application/x-www-form-urlencoded");
   m_NetworkAM->post(request, byteArray);
 }
 
